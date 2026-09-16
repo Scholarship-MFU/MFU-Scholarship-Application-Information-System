@@ -1,1 +1,0 @@
-# MFU-Scholarship-Application-Information-System
