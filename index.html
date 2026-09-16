@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- ตั้งค่า Babel ให้ทำงานแบบ Classic Runtime อย่างสมบูรณ์ เพื่อป้องกันปัญหา SyntaxError และ Module Error -->
+    <script>
+      Babel.registerPreset('react-classic', {
+        presets: [
+          [Babel.availablePresets['react'], { runtime: 'classic' }]
+        ]
+      });
+    </script>
+
+    <!-- Google Font (Optional) -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+      body { font-family: 'Sarabun', sans-serif; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- เรียกใช้ preset 'react-classic' ที่เราสร้างไว้แทน -->
+    <script type="text/babel" data-presets="react-classic,env">
+      const { useState, useEffect } = React;
+
+      // --- Icon Components ---
+      const Icons = {
+        Search: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>,
+        GraduationCap: () => <svg className="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z"></path></svg>,
+        DollarSign: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>,
+        Clock: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>,
+        School: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>,
+        ChevronRight: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>,
+        Filter: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>,
+        BookOpen: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>,
+        Calendar: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>,
+        Eye: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+      };
+
+      // --- Main App Component ---
+      const App = () => {
+        const [scholarships, setScholarships] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [selectedCategory, setSelectedCategory] = useState("ทุกสำนักวิชา");
+        const [selectedYear, setSelectedYear] = useState("ทุกชั้นปี");
+        const [selectedAcademicYear, setSelectedAcademicYear] = useState("ทุกปีการศึกษา");
+        const [searchTerm, setSearchTerm] = useState("");
+        const [filteredScholarships, setFilteredScholarships] = useState([]);
+        const [visitorCount, setVisitorCount] = useState(null);
+
+        // ฟังก์ชันเช็คว่าเลยกำหนดหรือยัง (เปรียบเทียบกับวันที่ปัจจุบัน)
+        const checkIsExpired = (dateString) => {
+          if (!dateString) return false; // ถ้าไม่มีระบุวันที่ ให้ถือว่ายังไม่หมดเขต
+          let date;
+          if (typeof dateString === 'string' && dateString.includes('-')) {
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+              date = new Date(parts[0], parts[1] - 1, parts[2]);
+            } else {
+              date = new Date(dateString);
+            }
+          } else {
+            date = new Date(dateString);
+          }
+          
+          if (isNaN(date.getTime())) return false; 
+          
+          const today = new Date();
+          today.setHours(0, 0, 0, 0); // ตั้งค่าเวลาเป็นเที่ยงคืน เพื่อเทียบเฉพาะวันที่
+          return date < today; // ถ้าวันที่ปิดรับสมัคร น้อยกว่า วันนี้ = หมดเขตแล้ว
+        };
+
+        // ฟังก์ชันแปลงวันที่เป็นไทยและสากล
+        const formatDualDate = (dateString) => {
+          if (!dateString) return "ไม่ระบุ (N/A)";
+          
+          let date;
+          if (typeof dateString === 'string' && dateString.includes('-')) {
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+              date = new Date(parts[0], parts[1] - 1, parts[2]);
+            } else {
+              date = new Date(dateString);
+            }
+          } else {
+            date = new Date(dateString);
+          }
+
+          if (isNaN(date.getTime())) return dateString; 
+          
+          const thaiDate = date.toLocaleDateString('th-TH', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          });
+
+          const interDate = date.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+          });
+
+          return (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-1">
+              <span>{thaiDate}</span>
+              <span className="opacity-75 text-xs sm:text-sm">({interDate})</span>
+            </div>
+          );
+        };
+
+        // ดึงข้อมูลจาก Google Sheet
+        useEffect(() => {
+          if (window.google && window.google.script) {
+            // โหลดข้อมูลทุน
+            google.script.run
+              .withSuccessHandler((data) => {
+                const reversedData = [...data].reverse();
+                setScholarships(reversedData);
+                setFilteredScholarships(reversedData);
+                setLoading(false);
+              })
+              .withFailureHandler((error) => {
+                console.error("Error fetching data: ", error);
+                setLoading(false);
+              })
+              .getScholarshipData();
+
+            // รันฟังก์ชันนับจำนวนคนเข้าชม
+            google.script.run
+              .withSuccessHandler((count) => {
+                setVisitorCount(count);
+              })
+              .withFailureHandler((error) => {
+                console.error("Error fetching visitor count: ", error);
+              })
+              .incrementAndGetVisitorCount();
+          } else {
+            setLoading(false);
+            setVisitorCount(1234); // Mock ข้อมูลสำหรับตอนทดสอบแบบ Local
+          }
+        }, []);
+
+        // Logic การกรองข้อมูล
+        useEffect(() => {
+          if (!scholarships.length) return;
+
+          const results = scholarships.filter(item => {
+            const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                  item.provider.toLowerCase().includes(searchTerm.toLowerCase());
+            
+            // แปลง category เป็น Array โดยแยกด้วยเครื่องหมาย , (เผื่อมีการระบุหลายสำนักวิชา)
+            const itemCategories = item.category ? String(item.category).split(',').map(c => c.trim()) : [];
+            
+            // เช็คว่าสำนักวิชาที่ผู้ใช้เลือก "ตรงกับ" หนึ่งในสำนักวิชาที่ทุนนี้ระบุไว้หรือไม่
+            const matchesCategory = selectedCategory === "ทุกสำนักวิชา" || 
+                                    itemCategories.includes(selectedCategory) || 
+                                    itemCategories.includes("ทุกสำนักวิชา");
+
+            const itemYears = Array.isArray(item.years) ? item.years : [];
+            let matchesYear = false;
+
+            if (selectedYear === "ทุกชั้นปี") {
+              matchesYear = !itemYears.includes("มัธยมศึกษาตอนปลาย");
+            } else if (selectedYear === "มัธยมศึกษาตอนปลาย") {
+              matchesYear = itemYears.includes("มัธยมศึกษาตอนปลาย");
+            } else {
+              matchesYear = itemYears.includes(String(selectedYear).toLowerCase()) || itemYears.includes("ทุกชั้นปี");
+            }
+
+            const itemAcademicYear = item.academicYear ? String(item.academicYear).toLowerCase() : "";
+            const matchesAcademicYear = selectedAcademicYear === "ทุกปีการศึกษา" || 
+                            itemAcademicYear === String(selectedAcademicYear).toLowerCase() || 
+                            itemAcademicYear === "ทุกปีการศึกษา";
+
+            return matchesSearch && matchesCategory && matchesYear && matchesAcademicYear;
+          });
+          setFilteredScholarships(results);
+        }, [searchTerm, selectedCategory, selectedYear, selectedAcademicYear, scholarships]);
+
+        const getTagColor = (tag) => {
+          if (tag.includes("ขาดแคลน")) return "bg-red-100 text-red-700";
+          if (tag.includes("เรียนดี")) return "bg-yellow-100 text-yellow-700";
+          if (tag.includes("วิศวกรรม") || tag.includes("IT")) return "bg-red-100 text-red-700";
+          return "bg-gray-100 text-gray-700";
+        };
+
+        const categories = [
+          { value: "ทุกสำนักวิชา", label: "ทุกสำนักวิชา (All)" },
+          { value: "สำนักวิชาศิลปศาสตร์", label: "สำนักวิชาศิลปศาสตร์ (School of Liberal Arts)" },
+          { value: "สำนักวิชาวิทยาศาสตร์", label: "สำนักวิชาวิทยาศาสตร์ (School of Science)" },
+          { value: "สำนักวิชาการจัดการ", label: "สำนักวิชาการจัดการ (School of Management)" },
+          { value: "สำนักวิชาเทคโนโลยีดิจิทัลประยุกต์", label: "สำนักวิชาเทคโนโลยีดิจิทัลประยุกต์ (School of Applied Digital Technology)" },
+          { value: "สำนักวิชาอุตสาหกรรมเกษตร", label: "สำนักวิชาอุตสาหกรรมเกษตร (School of Agro-Industry)" },
+          { value: "สำนักวิชานิติศาสตร์", label: "สำนักวิชานิติศาสตร์ (School of Law)" },
+          { value: "สำนักวิชาวิทยาศาสตร์เครื่องสำอาง", label: "สำนักวิชาวิทยาศาสตร์เครื่องสำอาง (School of Cosmetic Science)" },
+          { value: "สำนักวิชาวิทยาศาสตร์สุขภาพ", label: "สำนักวิชาวิทยาศาสตร์สุขภาพ (School of Health Science)" },
+          { value: "สำนักวิชาพยาบาลศาสตร์", label: "สำนักวิชาพยาบาลศาสตร์ (School of Nursing)" },
+          { value: "สำนักวิชาแพทยศาสตร์", label: "สำนักวิชาแพทยศาสตร์ (School of Medicine)" },
+          { value: "สำนักวิชาทันตแพทยศาสตร์", label: "สำนักวิชาทันตแพทยศาสตร์ (School of Dentistry)" },
+          { value: "สำนักวิชานวัตกรรมสังคม", label: "สำนักวิชานวัตกรรมสังคม (School of Social Innovation)" },
+          { value: "สำนักวิชาจีนวิทยา", label: "สำนักวิชาจีนวิทยา (School of Sinology)" },
+          { value: "สำนักวิชาการแพทย์บูรณาการ", label: "สำนักวิชาการแพทย์บูรณาการ (School of Integrative Medicine)" },
+        ];
+
+        const years = [
+          { value: "ทุกชั้นปี", label: "ทุกชั้นปี (All)" },
+          { value: "มัธยมศึกษาตอนปลาย", label: "มัธยมศึกษาตอนปลาย (High School)" },
+          { value: "1", label: "ปี 1 (Year 1)" },
+          { value: "2", label: "ปี 2 (Year 2)" },
+          { value: "3", label: "ปี 3 (Year 3)" },
+          { value: "4", label: "ปี 4 (Year 4)" },
+          { value: "5", label: "ปี 5 (Year 5)" },
+          { value: "6", label: "ปี 6 (Year 6)" },
+        ];
+
+        const academicYearsList = [
+          { value: "ทุกปีการศึกษา", label: "ทุกปีการศึกษา (All)" },
+          { value: "2567", label: "2567" },
+          { value: "2568", label: "2568" },
+          { value: "2569", label: "2569" }
+        ];
+
+        return (
+          <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-12">
+            {/* Header */}
+            <header className="bg-gradient-to-r from-red-600 to-indigo-700 text-white shadow-lg">
+              <div className="container mx-auto px-4 py-8">
+                <div className="flex flex-col md:flex-row items-center justify-between">
+                  <div className="mb-4 md:mb-0">
+                    <h1 className="text-3xl font-bold flex items-center gap-2">
+                      ระบบข้อมูลการรับสมัครทุนการศึกษา มหาวิทยาลัยแม่ฟ้าหลวง
+                    </h1>
+                    <p className="text-red-100 mt-2">Mae Fah Luang University Scholarship Application Information System</p>
+                  </div>
+                  
+                  {/* ปรับปรุงส่วนแสดงยอดเข้าชมและยอดทุนให้แยกเป็น 2 กล่อง */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="bg-white/10 backdrop-blur-sm px-4 py-3 rounded-xl border border-white/20 flex items-center justify-between sm:justify-start gap-3">
+                      <div className="flex items-center gap-2">
+                        <Icons.Eye />
+                        <span className="text-sm font-medium">ผู้เข้าชม (Visitors): </span>
+                      </div>
+                      <span className="text-xl font-bold">
+                        {visitorCount !== null ? visitorCount.toLocaleString() : "..."}
+                      </span>
+                    </div>
+                    
+                    <div className="bg-white/10 backdrop-blur-sm px-4 py-3 rounded-xl border border-white/20 flex items-center justify-between sm:justify-start gap-3">
+                      <div className="flex items-center gap-2">
+                        <Icons.BookOpen />
+                        <span className="text-sm font-medium">ทุนที่เปิดรับ: </span>
+                      </div>
+                      <span className="text-xl font-bold">
+                        {loading ? "..." : scholarships.length}
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="container mx-auto px-4 py-8 -mt-6 relative z-10">
+              
+              {/* Search & Filter */}
+              <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-slate-200">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-700">
+                   <Icons.Search /> ค้นหาทุนที่เหมาะกับคุณ (Find scholarships that suit you.)
+                </h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Text Search */}
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-slate-600 mb-1">ชื่อทุนการศึกษา (Scholarship Name) </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                         <Icons.Search />
+                      </div>
+                      <input 
+                        type="text"
+                        placeholder="ค้นหาชื่อทุน..."
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Academic Year Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 mb-1">ปีการศึกษา (Academic Year)</label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                        <Icons.Calendar />
+                      </div>
+                      <select 
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none bg-white appearance-none"
+                        value={selectedAcademicYear}
+                        onChange={(e) => setSelectedAcademicYear(e.target.value)}
+                      >
+                        {academicYearsList.map(y => (
+                          <option key={y.value} value={y.value}>{y.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Faculty Filter (Single Select) */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 mb-1">สำนักวิชา (School)</label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                        <Icons.BookOpen />
+                      </div>
+                      <select 
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none bg-white appearance-none"
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                      >
+                        {categories.map(cat => (
+                          <option key={cat.value} value={cat.value}>{cat.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Year Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 mb-1">ชั้นปีที่กำลังศึกษา (Current Year of Study) </label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                        <Icons.School />
+                      </div>
+                      <select 
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none bg-white appearance-none"
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                      >
+                        {years.map(y => (
+                          <option key={y.value} value={y.value}>{y.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Loading State */}
+              {loading && (
+                <div className="text-center py-20">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+                  <p className="mt-4 text-slate-500">กำลังโหลดข้อมูลจาก Google Sheet...</p>
+                </div>
+              )}
+
+              {/* Results */}
+              {!loading && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-bold text-slate-800">ผลการค้นหา ({filteredScholarships.length} รายการ)</h3>
+                    <div className="text-sm text-slate-500 flex items-center gap-1">
+                      <Icons.Filter /> เรียงตาม: ล่าสุด
+                    </div>
+                  </div>
+
+                  {filteredScholarships.length === 0 ? (
+                    <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300">
+                      <h3 className="text-lg font-medium text-slate-600">ไม่พบข้อมูล</h3>
+                      <p className="text-slate-500">ลองเปลี่ยนเงื่อนไขการค้นหา</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4">
+                      {filteredScholarships.map((scholarship, index) => {
+                        const isExpired = checkIsExpired(scholarship.deadline);
+                        
+                        return (
+                          <div key={index} className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all ${isExpired ? 'opacity-70 hover:opacity-100 grayscale-[20%]' : 'hover:shadow-md'}`}>
+                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                              
+                              <div className="flex-1">
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                  {/* Academic Year Badge */}
+                                  {scholarship.academicYear && (
+                                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-100 flex items-center gap-1">
+                                      <Icons.Calendar /> {String(scholarship.academicYear).toLowerCase() === 'all' || String(scholarship.academicYear) === 'ทุกปีการศึกษา' ? 'ทุกปีการศึกษา' : `ปี ${scholarship.academicYear}`}
+                                    </span>
+                                  )}
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                  {scholarship.categoryLabel}
+                                </span>
+                                {Array.isArray(scholarship.years) && scholarship.years.map(y => (
+                                  <span key={y} className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                    ชั้นปี {y}
+                                  </span>
+                                ))}
+                              </div>
+                              
+                              <h3 className="text-xl font-bold text-slate-800 mb-1 flex items-center gap-2">
+                                {scholarship.title}
+                              </h3>
+                              <p className="text-slate-500 text-sm mb-3 flex items-center gap-1">
+                                <Icons.School /> {scholarship.provider}
+                              </p>
+                              {/* ส่วนแสดงรายละเอียดเป็นข้อๆ */}
+                              <div className="text-slate-600 mb-4 text-sm space-y-1">
+                                {scholarship.description && scholarship.description.toString().split('\n').map((line, i) => (
+                                  line.trim() && (
+                                    <div key={i} className="flex items-start">
+                                      <span className="mr-2 mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
+                                      <span>{line}</span>
+                                    </div>
+                                  )
+                                ))}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {Array.isArray(scholarship.tags) && scholarship.tags.map(tag => (
+                                  <span key={tag} className={`px-2 py-1 rounded-md text-xs font-medium ${getTagColor(tag)}`}>
+                                    #{tag}
+                                  </span>
+                                ))}
+                                {isExpired && (
+                                  <span className="px-2 py-1 rounded-md text-xs font-bold bg-slate-200 text-slate-600">
+                                    หมดเขตรับสมัครแล้ว
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col items-start md:items-end min-w-[200px] border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
+                              <div className={`flex items-center gap-2 font-bold text-lg mb-1 ${isExpired ? 'text-slate-500' : 'text-green-600'}`}>
+                                {scholarship.amount}
+                              </div>
+                              <div className={`flex items-start gap-2 text-sm font-medium mb-4 px-3 py-2 rounded-lg w-full md:w-auto ${isExpired ? 'bg-slate-100 text-slate-500' : 'bg-red-50 text-red-600'}`}>
+                                <Icons.Clock className="shrink-0 mt-0.5" />
+                                <div className="flex flex-col items-start md:items-end">
+                                  <span className="whitespace-nowrap font-bold text-xs mb-0.5">
+                                    {isExpired ? 'หมดเขตเมื่อ (Expired):' : 'ปิดรับ (Deadline):'}
+                                  </span>
+                                  {formatDualDate(scholarship.deadline)}
+                                </div>
+                              </div>
+                              {scholarship.link ? (
+                                <a 
+                                  href={scholarship.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`w-full text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors no-underline ${isExpired ? 'bg-slate-500 hover:bg-slate-600' : 'bg-red-600 hover:bg-red-700'}`}
+                                >
+                                  {isExpired ? 'ดูรายละเอียด (หมดเขต)' : 'ดูรายละเอียด'} <Icons.ChevronRight />
+                                </a>
+                              ) : (
+                                <button disabled className="w-full bg-slate-200 text-slate-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 shadow-sm cursor-not-allowed">
+                                  {isExpired ? 'หมดเขตรับสมัคร' : 'ดูรายละเอียด'} <Icons.ChevronRight />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </main>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
